@@ -1,0 +1,17 @@
+{
+  "name": "CREWCREW Reference",
+  "short_name": "CREWCREW",
+  "description": "Aircraft Reference Manual for Crew",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/plane.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
