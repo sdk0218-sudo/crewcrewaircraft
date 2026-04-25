@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CREWCREW Reference</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <header class="glass-header">
+        <div class="header-content" style="display:flex; justify-content:space-between; align-items:center; width:100%">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <!-- Mobile Hamburger -->
+                <button id="sidebar-toggle-btn" class="mobile-menu-btn" onclick="window.toggleMobileSidebar()">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div id="home-logo-btn" style="display:flex; flex-direction:column; gap:0.25rem; cursor:pointer;" title="홈으로 가기">
+                    <div class="logo">
+                        <i data-lucide="plane"></i>
+                        <h1>CREWCREW</h1>
+                    </div>
+                    <p class="subtitle">기종도우미 <span style="font-size:0.85em; opacity:0.8;">by D</span></p>
+                </div>
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+                <!-- Zoom Controls -->
+                <div class="zoom-controls" style="display:flex; gap:0.2rem; background:rgba(0,0,0,0.3); padding:0.2rem; border-radius:0.5rem;">
+                    <button class="btn secondary-btn" style="padding:0.4rem; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:4px; cursor:pointer;" onclick="appZoom(-10)" title="축소"><i data-lucide="zoom-out"></i></button>
+                    <span id="zoom-level-text" style="font-size:0.8rem; width:40px; text-align:center; display:inline-block; align-self:center;">100%</span>
+                    <button class="btn secondary-btn" style="padding:0.4rem; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:4px; cursor:pointer;" onclick="appZoom(10)" title="확대"><i data-lucide="zoom-in"></i></button>
+                </div>
+                <!-- Global Edit Lock Toggle -->
+                <button id="lock-toggle-btn" class="btn warning-btn" style="width:auto; padding:0.5rem 1rem;">
+                    <i data-lucide="unlock"></i> <span>편집 모드 잠금 해제됨</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="window.toggleMobileSidebar()"></div>
+    <div class="app-layout">
+        <!-- 사이드바 (기종 네비게이션 트리) -->
+        <aside class="sidebar glass-panel" id="sidebar-panel">
+            <div id="nav-container" style="flex:1; overflow-y:auto;">
+                <!-- JS에서 그룹핑 통째로 렌더링됨 -->
+            </div>
+        </aside>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main-content glass-panel" style="position:relative;">
+            
+            <!-- Welcome Screen (Main User View) -->
+            <div id="welcome-screen" class="empty-state" style="justify-content:flex-start; padding-top:2rem;">
+                <!-- JS가 홈 위젯들을 렌더링합니다 -->
+            </div>
+
+            <!-- Edit Home Screen (Main Editor View) -->
+            <div id="edit-home-screen" style="display: none;">
+                <div class="detail-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <h2 style="margin-bottom:0">홈 화면 편집 (Home Builder)</h2>
+                        <span style="color:var(--text-muted); font-size:0.9rem;">메인 화면의 위젯을 편집합니다.</span>
+                    </div>
+                    <div style="display:flex; gap:1rem;">
+                        <button class="edit-btn" id="cancel-home-edit-btn" style="border-color:var(--text-muted); color:var(--text-muted)">작업 취소</button>
+                        <button class="edit-btn editing" id="save-home-edit-btn"><i data-lucide="save"></i> <span>저장 완료</span></button>
+                    </div>
+                </div>
+                <div id="edit-home-sections-container" style="display:flex; flex-direction:column; gap:1rem;"></div>
+            </div>
+
+            <!-- View Screen (Dynamic Sections) -->
+            <div id="detail-screen" class="detail-screen" style="display: none;">
+                <div class="detail-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="title-wrap">
+                        <span class="badge" id="ac-type-badge">B737</span>
+                        <h2 id="ac-title">B737-MAX8 (7m8r)</h2>
+                    </div>
+                    <!-- View 모드에서의 액션 버튼들 -->
+                    <div id="view-action-container" style="display:flex; gap:0.75rem; align-items:center;">
+                        <button id="copy-all-btn" class="copy-all-btn" onclick="window.copyAllSections()" style="display:none;">
+                            <i data-lucide="copy"></i> <span>내용 전체 복사</span>
+                        </button>
+                        <button id="edit-btn" class="edit-btn">
+                            <i data-lucide="edit-3"></i> <span>섹션 추가 및 세부 내용 수정</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 동적으로 채워질 섹션들 컨테이너 -->
+                <div class="grid-layout" id="dynamic-sections-container">
+                    <!-- JS renders cards here -->
+                </div>
+                
+                <div id="delete-action-container" style="margin-top:2rem; text-align:right;">
+                    <button class="btn danger-btn" id="delete-aircraft-btn" style="width:auto; padding:0.5rem 1rem;" title="기종 전체 삭제">
+                        <i data-lucide="trash-2"></i> 기종 완전 삭제
+                    </button>
+                </div>
+            </div>
+
+            <!-- Edit Screen (CMS Builder) -->
+            <div id="edit-screen" style="display: none;">
+                <div class="detail-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <h2 style="margin-bottom:0">항목 커스텀 셋업 (Builder)</h2>
+                        <span style="color:var(--text-muted); font-size:0.9rem;">항목을 통째로 바꾸거나 새로 만드세요.</span>
+                    </div>
+                    <div style="display:flex; gap:1rem;">
+                        <button class="edit-btn" id="cancel-edit-btn" style="border-color:var(--text-muted); color:var(--text-muted)">작업 취소</button>
+                        <button class="edit-btn editing" id="save-edit-btn"><i data-lucide="save"></i> <span>저장 완료</span></button>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <!-- Basic Info -->
+                    <div class="card full-width">
+                        <h3>문서 기본 정보</h3>
+                        <div style="display:grid; grid-template-columns: 1fr; gap: 1rem;">
+                            <div class="input-group">
+                                <label>문서 제목 (네비게이션에 표시될 이름)</label>
+                                <input type="text" id="edit-type" class="cms-input" placeholder="이름을 입력하세요 (예: B737)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Sections Builder Area -->
+                    <div id="edit-sections-container" style="display:flex; flex-direction:column; gap:1rem;">
+                        <!-- JS renders editor cards here -->
+                    </div>
+
+                    <!-- Add New Section Wrapper -->
+                    <div class="card full-width" style="border:1px dashed var(--accent); background:rgba(56, 189, 248, 0.05); text-align:center;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+                            <span style="color:var(--text-main); font-weight:700; font-size:1.1rem;">✨ 새로운 매뉴얼 블록(섹션) 추가</span>
+                            <div style="display:flex; gap:0.75rem;">
+                                <button class="btn warning-btn" style="width:auto; padding:0.5rem 1rem;" onclick="window.pasteSection()"><i data-lucide="clipboard-paste"></i> 섹션 1개 붙여넣기</button>
+                                <button class="btn warning-btn" style="width:auto; padding:0.5rem 1rem; background:#f59e0b; border-color:#d97706; color:white;" onclick="window.pasteAllSections()"><i data-lucide="layers"></i> 복사한 전체 내용 붙여넣기 (추가)</button>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+                            <button class="btn secondary-btn add-section-btn" data-type="memo" style="width:auto;"><i data-lucide="file-edit"></i> 📝 자유 메모/긴 글</button>
+                            <button class="btn secondary-btn add-section-btn" data-type="list" style="width:auto;"><i data-lucide="list"></i> 요약 리스트 박스</button>
+                            <button class="btn secondary-btn add-section-btn" data-type="grid" style="width:auto;"><i data-lucide="ruler"></i> 제원/스펙 박스</button>
+                            <button class="btn secondary-btn add-section-btn" data-type="links" style="width:auto;"><i data-lucide="link"></i> 외부 링크 박스</button>
+                            <button class="btn secondary-btn add-section-btn" data-type="staffing" style="width:auto;"><i data-lucide="users"></i> Duty/Staffing 박스</button>
+                            <button class="btn secondary-btn add-section-btn" data-type="image" style="width:auto;"><i data-lucide="camera"></i> 사진/이미지 박스</button>
+                            <button class="btn secondary-btn add-section-btn" data-type="file" style="width:auto;"><i data-lucide="file-text"></i> 파일/문서 박스</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Icon Picker Modal Overlay -->
+    <!-- Tree Node Settings Modal -->
+    <div class="modal" id="tree-node-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+        <div class="modal-content glass-panel" style="width:90%; max-width:400px; padding:2rem;">
+            <h3 style="margin-bottom:1rem; text-align:center;"><i data-lucide="settings"></i> 항목 속성 설정</h3>
+            <input type="hidden" id="tree-node-id">
+            <div class="input-group" style="margin-bottom:1rem;">
+                <label>이름 (표시명)</label>
+                <input type="text" id="tree-node-title" class="cms-input">
+            </div>
+            <div class="input-group" style="margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                <label style="margin:0; width:100px;">아이콘</label>
+                <button class="builder-icon-btn" id="tree-node-icon-btn" onclick="window.pickTreeIcon()"><i data-lucide="folder"></i></button>
+                <input type="hidden" id="tree-node-icon" value="folder">
+            </div>
+            <div class="input-group" style="margin-bottom:1rem;" id="modal-folder-select-wrap">
+                <label>소속 폴더(그룹) 변경</label>
+                <select id="tree-node-parent" class="cms-input">
+                    <!-- JS에서 폴더 목록 채워줌 -->
+                </select>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+                <div class="input-group">
+                    <label>글자 크기</label>
+                    <select id="tree-node-size" class="cms-input">
+                        <option value="0.85rem">작게 (기본)</option>
+                        <option value="0.95rem">중간</option>
+                        <option value="1.1rem">크게</option>
+                        <option value="1.25rem">매우 크게</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>글자 두께</label>
+                    <select id="tree-node-weight" class="cms-input">
+                        <option value="400">보통</option>
+                        <option value="600">중간 굵게</option>
+                        <option value="800">매우 굵게</option>
+                        <option value="900">최고 굵게 (Black)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-group" style="margin-bottom:1rem;">
+                <label>글자 색상</label>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <input type="color" id="tree-node-color" style="width:40px; height:34px; border:none; background:none; cursor:pointer;" value="#ffffff">
+                    <input type="text" id="tree-node-color-text" class="cms-input" placeholder="#FFFFFF" style="flex:1;">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; margin-bottom:1.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <input type="checkbox" id="tree-node-always-open" style="width:16px;height:16px;">
+                    <label for="tree-node-always-open" style="font-size:0.8rem; cursor:pointer; margin:0;">항상 펼치기</label>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <input type="checkbox" id="tree-node-hide-icon" style="width:16px;height:16px;">
+                    <label for="tree-node-hide-icon" style="font-size:0.8rem; cursor:pointer; margin:0;">아이콘 숨기기</label>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:center; gap:1rem; margin-top:1rem;">
+                <button class="edit-btn" onclick="document.getElementById('tree-node-modal').style.display='none'">취소</button>
+                <button class="edit-btn editing" onclick="window.saveTreeNodeSettings()"><i data-lucide="save"></i> 설정 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Icon Picker Modal -->
+    <div id="icon-picker-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3>아이콘을 선택하세요</h3>
+                <button id="close-modal-btn" class="btn-delete" style="width:30px; height:30px;"><i data-lucide="x"></i></button>
+            </div>
+            <div class="icon-grid" id="icon-grid-container">
+            </div>
+        </div>
+    </div>
+
+    <script src="crew.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
